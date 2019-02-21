@@ -60,54 +60,27 @@ with Failure s -> Printf.printf "%s\n" s
 
 (* Expression evaluator *)
 
+let from_bool_to_int b = if b then 1 else 0
 
-@@ -54,7 +55,7 @@ let bool_to_int x = if x then 1 else 0
+let from_int_to_bool i = i!= 0
 
+let get_oper op l_e r_e = match op with
+    |"+" -> l_e + r_e
+    |"-" -> l_e - r_e
+    |"*" -> l_e * r_e
+    |"/" -> l_e / r_e
+    |"%" -> l_e mod r_e
+    |">" -> from_bool_to_int (l_e > r_e)
+    |"<" -> from_bool_to_int (l_e < r_e)
+    |">=" -> from_bool_to_int (l_e >= r_e)
+    |"<=" -> from_bool_to_int (l_e <= r_e)
+    |"==" -> from_bool_to_int (l_e == r_e)
+    |"!=" -> from_bool_to_int (l_e != r_e)
+    |"!!" -> from_bool_to_int(from_int_to_bool l_e || from_int_to_bool r_e)
+    |"&&" -> from_bool_to_int(from_int_to_bool l_e && from_int_to_bool r_e)
 
+let rec eval state_ expres_ = match expres_ with
+    |Const c -> c 
+    |Var v -> state_ v
+    |Binop (op,l_e,r_e) -> get_oper op (eval state_ l_e) (eval state_ r_e)
 
-let rec eval state expr = 
-
-match expr with
-
-| Const v -> v
-
-| Const c -> c
-
-| Var v -> state v
-
-| Binop (op, x, y) -> 
-
-match op with
-@@ -63,12 +64,13 @@ let rec eval state expr =
-
-| "*" -> (eval state x) * (eval state y)
-
-| "/" -> (eval state x) / (eval state y)
-
-| "%" -> (eval state x) mod (eval state y)
-
-| "&&" -> bool_to_int (((eval state x) <> 0) && ((eval state y) <> 0))
-
-| "!!" -> bool_to_int (((eval state x) <> 0) || ((eval state y) <> 0))
-
-| "==" -> bool_to_int ((eval state x) = (eval state y))
-
-| "!=" -> bool_to_int ((eval state x) <> (eval state y))
-
-| "&&" -> bool_to_int ( ( (eval state x) <> 0 ) && ( (eval state y) <> 0 ) )
-
-| "!!" -> bool_to_int ( ( (eval state x) <> 0 ) || ( (eval state y) <> 0 ) )
-
-| "==" -> bool_to_int ((eval state x) == (eval state y))
-
-| "!=" -> bool_to_int ((eval state x) != (eval state y))
-
-| "<=" -> bool_to_int ((eval state x) <= (eval state y))
-
-| "<" -> bool_to_int ((eval state x) < (eval state y))
-
-| ">=" -> bool_to_int ((eval state x) >= (eval state y))
-
-| ">" -> bool_to_int ((eval state x) > (eval state y))
-
-| _ -> failwith "Not implemented yet"
