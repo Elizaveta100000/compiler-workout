@@ -1,22 +1,3 @@
-Skip to content
- 
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
- @Elizaveta100000 Sign out
-0
-0 84 Elizaveta100000/compiler-workout
-forked from danyaberezun/compiler-workout
- Code  Pull requests 0  Projects 0  Wiki  Insights  Settings
-compiler-workout/src/Embedding.ml
-@Elizaveta100000 Elizaveta100000 Update Embedding.ml
-81050ed  13 days ago
-@Elizaveta100000 @danyaberezun
-42 lines (32 sloc)  941 Bytes
-    
 (* A deep embedding of simple expressions in OCaml. *)
 
 (* Opening GT yet again. *)
@@ -58,4 +39,3 @@ List.iter (fun e -> Printf.printf "eval s (%s) = %d\n" (show(expr) e) (eval s e)
 
 
                    
-
