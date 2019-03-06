@@ -41,28 +41,25 @@ module Expr =
        Takes a state and an expression, and returns the value of the expression in 
        the given state.
     *)
-    let conv_int a = if a then 1 else 0
-  let rec eval s e = match e with
-       | Const con -> con
-       | Var variable -> s variable
-       | Binop ("!!",le, ri) -> conv_int(eval s le != 0 || eval s ri != 0)
-       | Binop ("&&",le, ri) -> conv_int(eval s le != 0 && eval s ri != 0)
-       | Binop ("==",le, ri) -> conv_int(eval s le == eval s ri)
-       | Binop ("!=",le, ri) -> conv_int(eval s le != eval s ri)
-       | Binop ("<=",le, ri) -> conv_int(eval s le <= eval s ri)
-       | Binop ("<", le, ri) -> conv_int(eval s le < eval s ri)
-       | Binop (">=",le, ri) -> conv_int(eval s le >= eval s ri)
-       | Binop (">", le, ri) -> conv_int(eval s le > eval s ri)
-       | Binop ("+", le, ri) -> eval s le + eval s ri
-       | Binop ("-", le, ri) -> eval s le - eval s ri
-       | Binop ("*", le, ri) -> eval s le * eval s ri
-       | Binop ("/", le, ri) -> eval s le / eval s ri
-       | Binop ("%", le, ri) -> eval s le mod eval s ri ;;
+    let boolToInt b = if b then 1 else 0
+    let intToBool i = i != 0
 
 
-   
-
-  end
+     (* Possible operations *)
+    let operation oper leftExpr rightExpr = match oper with
+        |"!!" -> boolToInt (( || ) (intToBool leftExpr) (intToBool rightExpr))
+        |"&&" -> boolToInt (( && ) (intToBool leftExpr) (intToBool rightExpr))
+        |"==" -> boolToInt (( == ) leftExpr rightExpr)
+        |"!=" -> boolToInt (( != ) leftExpr rightExpr)
+        |"<=" -> boolToInt (( <= ) leftExpr rightExpr)
+        |"<" -> boolToInt (( <  ) leftExpr rightExpr)
+        |">=" -> boolToInt (( >= ) leftExpr rightExpr)
+        |">" -> boolToInt (( >  ) leftExpr rightExpr)
+        |"+" -> ( +  ) leftExpr rightExpr
+        |"-" -> ( -  ) leftExpr rightExpr
+        |"*" -> ( *  ) leftExpr rightExpr
+        |"/" -> ( /  ) leftExpr rightExpr
+        |"%" -> ( mod ) leftExpr rightExpr
                     
 (* Simple statements: syntax and sematics *)
 module Stmt =
@@ -84,17 +81,16 @@ module Stmt =
 
        Takes a configuration and a statement, and returns another configuration
     *)
-    let rec eval conf statement =
-      let (state, input, output) = conf in
-      match statement with
-        | Read var -> (match input with
-                      | head::tail -> (Expr.update var head state, tail, output))
-        | Write expr -> (state, input, output @ [Expr.eval state expr])
-        | Assign (var, expr) -> (Expr.update var (Expr.eval state expr) state, input, output)
-        | Seq (left, right) -> eval (eval conf left) right;;  
+    let rec eval state expr = match expr with
+    |Const cName -> cName
+    |Var varName -> state varName
+    |Binop (oper, leftExpr, rightExpr) -> 
+        operation oper (eval state leftExpr) (eval state rightExpr)
 
 
-   end
+   end	
+
+   
                                                          
  
 
