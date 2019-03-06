@@ -33,22 +33,54 @@ let empty = fun x -> failwith (Printf.sprintf "Undefined variable %s" x)
 let update x v s = fun y -> if x = y then v else s y
 
 (* An example of a non-trivial state: *)                                                   
+
 let s = update "x" 1 @@ update "y" 2 @@ update "z" 3 @@ update "t" 4 empty
 
+
+
 (* Some testing; comment this definition out when submitting the solution. *)
+
+(* Some testing; comment this definition out when submitting the solution.
+
 let _ =
-  List.iter
-    (fun x ->
-       try  Printf.printf "%s=%d\n" x @@ s x
-       with Failure s -> Printf.printf "%s\n" s
-    ) ["x"; "a"; "y"; "z"; "t"; "b"]
 
-(* Expression evaluator
+List.iter
 
-     val eval : state -> expr -> int
- 
-   Takes a state and an expression, and returns the value of the expression in 
-   the given state.
+(fun x ->
+
+try Printf.printf "%s=%d\n" x @@ s x
+
+with Failure s -> Printf.printf "%s\n" s
+
+) ["x"; "a"; "y"; "z"; "t"; "b"]
+
 *)
-let eval = failwith "Not implemented yet"
-                    
+
+
+
+(* Expression evaluator *)
+
+let from_bool_to_int b = if b then 1 else 0
+
+let from_int_to_bool i = i!= 0
+
+let get_oper op l_e r_e = match op with
+    |"+" -> l_e + r_e
+    |"-" -> l_e - r_e
+    |"*" -> l_e * r_e
+    |"/" -> l_e / r_e
+    |"%" -> l_e mod r_e
+    |">" -> from_bool_to_int (l_e > r_e)
+    |"<" -> from_bool_to_int (l_e < r_e)
+    |">=" -> from_bool_to_int (l_e >= r_e)
+    |"<=" -> from_bool_to_int (l_e <= r_e)
+    |"==" -> from_bool_to_int (l_e == r_e)
+    |"!=" -> from_bool_to_int (l_e != r_e)
+    |"!!" -> from_bool_to_int(from_int_to_bool l_e || from_int_to_bool r_e)
+    |"&&" -> from_bool_to_int(from_int_to_bool l_e && from_int_to_bool r_e)
+
+let rec eval state_ expres_ = match expres_ with
+    |Const c -> c 
+    |Var v -> state_ v
+    |Binop (op,l_e,r_e) -> get_oper op (eval state_ l_e) (eval state_ r_e)
+
