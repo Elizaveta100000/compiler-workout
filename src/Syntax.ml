@@ -41,25 +41,29 @@ module Expr =
        Takes a state and an expression, and returns the value of the expression in 
        the given state.
     *)
-    let boolToInt b = if b then 1 else 0
-    let intToBool i = i != 0
-
-
-     (* Possible operations *)
-    let operation oper leftExpr rightExpr = match oper with
-        |"!!" -> boolToInt (( || ) (intToBool leftExpr) (intToBool rightExpr))
-        |"&&" -> boolToInt (( && ) (intToBool leftExpr) (intToBool rightExpr))
-        |"==" -> boolToInt (( == ) leftExpr rightExpr)
-        |"!=" -> boolToInt (( != ) leftExpr rightExpr)
-        |"<=" -> boolToInt (( <= ) leftExpr rightExpr)
-        |"<" -> boolToInt (( <  ) leftExpr rightExpr)
-        |">=" -> boolToInt (( >= ) leftExpr rightExpr)
-        |">" -> boolToInt (( >  ) leftExpr rightExpr)
-        |"+" -> ( +  ) leftExpr rightExpr
-        |"-" -> ( -  ) leftExpr rightExpr
-        |"*" -> ( *  ) leftExpr rightExpr
-        |"/" -> ( /  ) leftExpr rightExpr
-        |"%" -> ( mod ) leftExpr rightExpr
+    let toInt ret = if ret then 1 else 0;;
+    let toBool ret = ret != 0;;
+    let operator new_oper left right = match new_oper with
+      | "+"  -> left + right
+	  | "-"  -> left - right
+	  | "*"  -> left * right
+	  | "/"  -> left / right
+	  | "%"  -> left mod right
+	  | ">"  -> toInt (left > right)
+	  | "<"  -> toInt (left < right)
+	  | ">=" -> toInt (left >= right)
+	  | "<=" -> toInt (left <= right)
+	  | "==" -> toInt (left = right)
+	  | "!=" -> toInt (left != right)
+	  | "!!" -> toInt (toBool left || toBool right)
+	  | "&&" -> toInt (toBool left && toBool right);;
+	
+    let rec eval state express = match express with
+     | Const c -> c
+     | Var v -> state v
+     | Binop (new_oper, left, right) -> operator new_oper (eval state left) (eval state right);;	
+	  
+  end
                     
 (* Simple statements: syntax and sematics *)
 module Stmt =
@@ -81,18 +85,16 @@ module Stmt =
 
        Takes a configuration and a statement, and returns another configuration
     *)
-    let rec eval state expr = match expr with
-    |Const cName -> cName
-    |Var varName -> state varName
-    |Binop (oper, leftExpr, rightExpr) -> 
-        operation oper (eval state leftExpr) (eval state rightExpr)
-
-
-   end	
-
-   
+     let rec eval conf statement =
+      let (state, input, output) = conf in
+      match statement with
+        | Read var -> (match input with
+                      | head::tail -> (Expr.update var head state, tail, output))
+        | Write expr -> (state, input, output @ [Expr.eval state expr])
+        | Assign (var, expr) -> (Expr.update var (Expr.eval state expr) state, input, output)
+        | Seq (left, right) -> eval (eval conf left) right;;  
                                                          
- 
+  end
 
 (* The top-level definitions *)
 
