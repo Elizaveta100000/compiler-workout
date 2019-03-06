@@ -1,5 +1,5 @@
 open GT       
- open List      
+       
 (* The type for the stack machine instructions *)
 @type insn =
 (* binary operator                 *) | BINOP of string
@@ -23,17 +23,27 @@ type config = int list * Syntax.Stmt.config
 
    Takes a configuration and a program, and returns a configuration as a result
  *)                         
-let rec eval cfg prg =
-  let step (st, (s, i, o)) p = match p with
-    | BINOP op -> (Syntax.Expr.operation op (hd (tl st)) (hd st) :: (tl (tl st)), (s, i, o))
-    | CONST n  -> (n :: st, (s, i, o))
-    | READ     -> (hd i :: st, (s, tl i, o))
-    | WRITE    -> (tl st, (s, i, o @ [hd st]))
-    | LD variable_name    -> (s variable_name :: st, (s, i, o))
-    | ST variable_name    -> (tl st, (Syntax.Expr.update variable_name (hd st) s, i, o))
-  in match prg with
-    | [] -> cfg
-    | p :: ps -> eval (step cfg p) ps
+let eval_conf config insn =
+	let (stack, state_cfg) = config in
+	let (state, input, output) = state_cfg in
+	match insn with
+	    | BINOP operator -> (match stack with
+		    | y::x::tail -> ([(Syntax.Expr.operator operator) x y] @ tail, state_cfg))
+
+            | CONST value -> ([value] @ stack, state_cfg)
+
+ 	    | READ -> (match input with
+		    | head::tail -> ([head] @ stack, (state, tail, output)))
+
+ 	    | WRITE -> (match stack with
+		    | head::tail -> (tail, (state, input, output @ [head])))
+
+ 	    | LD  var -> ([state var] @ stack, state_cfg)
+
+ 	    | ST  var -> (match stack with
+		    | head::tail -> (tail, (Syntax.Expr.update var head state, input, output)))
+			
+let eval config prg = List.fold_left eval_conf config prg
 
 (* Top-level evaluation
 
@@ -51,13 +61,13 @@ let run i p = let (_, (_, _, o)) = eval ([], (Syntax.Expr.empty, i, [])) p in o
    stack machine
  *)
 
-let rec compile_expr e = match e with
-    | Syntax.Expr.Const n -> [CONST n]
-    | Syntax.Expr.Var v -> [LD v]
-    | Syntax.Expr.Binop (op, l_e,r_e) -> compile_expr l_e@ compile_expr r_e@ [BINOP op]
+let rec comp_expr expression = match expression with
+       | Syntax.Expr.Const  const         -> [CONST const]
+       | Syntax.Expr.Var    var         -> [LD var]
+       | Syntax.Expr.Binop (op, left, right) -> (comp_expr left) @ (comp_expr right) @ [BINOP op]
 
- let rec compile p = match p with
-    | Syntax.Stmt.Read variable_name -> [READ; ST variable_name]
-    | Syntax.Stmt.Write expression  -> compile_expr expression @ [WRITE]
-    | Syntax.Stmt.Assign (variable_name, expression) -> compile_expr expression@ [ST variable_name]
-    | Syntax.Stmt.Seq (e1, e2) -> compile e1 @ compile e2;;
+ let rec compile s = match s with
+       | Syntax.Stmt.Read    var       -> [READ; ST var]
+       | Syntax.Stmt.Write   expression       -> (comp_expr expression) @ [WRITE]
+       | Syntax.Stmt.Assign (var, expression)   -> (comp_expr expression) @ [ST var]
+       | Syntax.Stmt.Seq    (left, right) -> (compile left) @ (compile right)
