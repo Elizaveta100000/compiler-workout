@@ -1,22 +1,4 @@
-(* X86 codegeneration interface *)
-
-(* The registers: *)
-let regs = [|"%ebx"; "%ecx"; "%esi"; "%edi"; "%eax"; "%edx"; "%ebp"; "%esp"|]
-
-(* We can not freely operate with all register; only 3 by now *)                    
-let num_of_regs = Array.length regs - 5
-
-(* We need to know the word size to calculate offsets correctly *)
-let word_size = 4
-
-(* We need to distinguish the following operand types: *)
-type opnd = 
-| R of int     (* hard register                    *)
-| S of int     (* a position on the hardware stack *)
-| M of string  (* a named memory location          *)
-| L of int     (* an immediate operand             *)
-
-((* X86 codegeneration interface *)
+* X86 codegeneration interface *)
 
 (* The registers: *)
 let regs = [|"%ebx"; "%ecx"; "%esi"; "%edi"; "%eax"; "%edx"; "%ebp"; "%esp"|]
