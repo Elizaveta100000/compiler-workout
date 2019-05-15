@@ -138,7 +138,7 @@ static void printValue (void *p) {
   }
 }
 
-extern void* Belem (int i, void *p) { // Order changed to avoid SWAPs in sexp
+extern void* Belem (int i, void *p) {
   data *a = TO_DATA(p);
   
   i = UNBOX(i);
@@ -203,7 +203,7 @@ extern void* Bsexp (int n, ...) {
   d->tag = SEXP_TAG | n;
   
   va_start(args, n);
-  r->tag = va_arg(args, int); // Order changed for easier handling in X86
+  r->tag = va_arg(args, int);
   
   for (i=0; i<n; i++) {
     int ai = va_arg(args, int);
@@ -219,12 +219,12 @@ extern void* Bsexp (int n, ...) {
   return d->contents;
 }
 
-extern int Btag (int t, void *d) { // Order changed for easier handling in X86
+extern int Btag (int t, void *d) {
   data *r = TO_DATA(d);
   return BOX(TAG(r->tag) == SEXP_TAG && TO_SEXP(d)->tag == t);
 }
 		 
-extern void Bsta (int n, void *s, int v, ...) { // Order changed for easier handling in X86
+extern void Bsta (int n, void *s, int v, ...) {
   va_list args;
   int i, k;
   data *a;
